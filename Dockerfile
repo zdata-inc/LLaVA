@@ -1,9 +1,6 @@
 # Use an official CUDA-enabled Python runtime as a parent image
 FROM nvidia/cuda:12.3.1-devel-ubuntu20.04 as base
 
-# Store LLaVA commit hash
-ARG LLAVA_COMMIT=9a26bd1435b4ac42c282757f2c16d34226575e96
-
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=on
@@ -31,9 +28,14 @@ RUN /miniconda/bin/conda create -n llava python=3.10 -y && \
 # Stage 2: Install LLaVA and python modules
 FROM base as setup
 
-RUN git clone https://github.com/haotian-liu/LLaVA.git && \
-    cd LLaVA && \
-    git checkout ${LLAVA_COMMIT}
+# Copy LLaVA repo
+RUN mkdir /LLaVA
+COPY /home/asakhare/github/zData/LLaVA /LLaVA
+
+#ARG LLAVA_COMMIT=9a26bd1435b4ac42c282757f2c16d34226575e96
+#RUN git clone https://github.com/haotian-liu/LLaVA.git && \
+#    cd LLaVA && \
+#    git checkout ${LLAVA_COMMIT}
 
 WORKDIR /LLaVA
 
