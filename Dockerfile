@@ -61,6 +61,7 @@ ENV VERSION=plain
 ENV DATA_PATH=./data/blip_laion_cc_sbu_558k.json
 ENV IMAGE_FOLDER=./data/images
 ENV VISION_TOWER=./data/openai/clip-vit-large-patch14-336
+ENV PRETRAIN_MM_MLP_ADAPTER=./outputs/non_lora_trainables.bin
 ENV MM_PROJECTOR_TYPE=mlp2x_gelu
 ENV TUNE_MM_MLP_ADAPTER=True
 ENV MM_VISION_SELECT_LAYER=-2
@@ -87,41 +88,85 @@ ENV GRADIENT_CHECKPOINTING=True
 ENV DATALOADER_NUM_WORKERS=1
 ENV LAZY_PREPROCESS=True
 ENV REPORT_TO=wandb
+ENV MM_PROJECTOR_LR=2e-5
+ENV TRAINING_TYPE=None
 
-# Set entry point to the main script with deepspeed wrapper and default arguments
-ENTRYPOINT ["/bin/bash", "-c", "/miniconda/envs/llava/bin/deepspeed llava/train/train_mem.py \
-            --lora_enable $LORA_ENABLE \
-            --lora_r $LORA_R \
-            --lora_alpha $LORA_ALPHA \
-            --deepspeed $DEEPSPEED \
-            --model_name_or_path $MODEL_NAME_OR_PATH \
-            --version $VERSION \
-            --data_path $DATA_PATH \
-            --image_folder $IMAGE_FOLDER \
-            --vision_tower $VISION_TOWER \
-            --mm_projector_type $MM_PROJECTOR_TYPE \
-            --tune_mm_mlp_adapter $TUNE_MM_MLP_ADAPTER \
-            --mm_vision_select_layer $MM_VISION_SELECT_LAYER \
-            --mm_use_im_start_end $MM_USE_IM_START_END \
-            --mm_use_im_patch_token $MM_USE_IM_PATCH_TOKEN \
-            --bf16 $BF16 \
-            --output_dir $OUTPUT_DIR \
-            --num_train_epochs $NUM_TRAIN_EPOCHS \
-            --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
-            --per_device_eval_batch_size $PER_DEVICE_EVAL_BATCH_SIZE \
-            --gradient_accumulation_steps $GRADIENT_ACCUMULATION_STEPS \
-            --evaluation_strategy $EVALUATION_STRATEGY \
-            --save_strategy $SAVE_STRATEGY \
-            --save_steps $SAVE_STEPS \
-            --save_total_limit $SAVE_TOTAL_LIMIT \
-            --learning_rate $LEARNING_RATE \
-            --weight_decay $WEIGHT_DECAY \
-            --warmup_ratio $WARMUP_RATIO \
-            --lr_scheduler_type $LR_SCHEDULER_TYPE \
-            --logging_steps $LOGGING_STEPS \
-            --tf32 $TF32 \
-            --model_max_length $MODEL_MAX_LENGTH \
-            --gradient_checkpointing $GRADIENT_CHECKPOINTING \
-            --dataloader_num_workers $DATALOADER_NUM_WORKERS \
-            --lazy_preprocess $LAZY_PREPROCESS \
-            --report_to $REPORT_TO $@"]
+# Default entry point to the training script with conditional logic
+ENTRYPOINT ["/bin/bash", "-c", "if [ \"$TRAINING_TYPE\" == \"pretrain\" ]; then \
+                                    /miniconda/envs/llava/bin/deepspeed llava/train/train_mem.py \
+                                    --deepspeed $DEEPSPEED \
+                                    --model_name_or_path $MODEL_NAME_OR_PATH \
+                                    --version $VERSION \
+                                    --data_path $DATA_PATH \
+                                    --image_folder $IMAGE_FOLDER \
+                                    --vision_tower $VISION_TOWER \
+                                    --mm_projector_type $MM_PROJECTOR_TYPE \
+                                    --tune_mm_mlp_adapter $TUNE_MM_MLP_ADAPTER \
+                                    --mm_vision_select_layer $MM_VISION_SELECT_LAYER \
+                                    --mm_use_im_start_end $MM_USE_IM_START_END \
+                                    --mm_use_im_patch_token $MM_USE_IM_PATCH_TOKEN \
+                                    --bf16 $BF16 \
+                                    --output_dir $OUTPUT_DIR \
+                                    --num_train_epochs $NUM_TRAIN_EPOCHS \
+                                    --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
+                                    --per_device_eval_batch_size $PER_DEVICE_EVAL_BATCH_SIZE \
+                                    --gradient_accumulation_steps $GRADIENT_ACCUMULATION_STEPS \
+                                    --evaluation_strategy $EVALUATION_STRATEGY \
+                                    --save_strategy $SAVE_STRATEGY \
+                                    --save_steps $SAVE_STEPS \
+                                    --save_total_limit $SAVE_TOTAL_LIMIT \
+                                    --learning_rate $LEARNING_RATE \
+                                    --weight_decay $WEIGHT_DECAY \
+                                    --warmup_ratio $WARMUP_RATIO \
+                                    --lr_scheduler_type $LR_SCHEDULER_TYPE \
+                                    --logging_steps $LOGGING_STEPS \
+                                    --tf32 $TF32 \
+                                    --model_max_length $MODEL_MAX_LENGTH \
+                                    --gradient_checkpointing $GRADIENT_CHECKPOINTING \
+                                    --dataloader_num_workers $DATALOADER_NUM_WORKERS \
+                                    --lazy_preprocess $LAZY_PREPROCESS \
+                                    --report_to $REPORT_TO $@; \
+                                elif [ \"$TRAINING_TYPE\" == \"finetune\" ]; then \
+                                    /miniconda/envs/llava/bin/deepspeed llava/train/train_mem.py \
+                                    --lora_enable True --lora_r 128 --lora_alpha 256 --mm_projector_lr 2e-5 \
+                                    --deepspeed $DEEPSPEED \
+                                    --model_name_or_path $MODEL_NAME_OR_PATH \
+                                    --version v1 \
+                                    --data_path $DATA_PATH \
+                                    --image_folder $IMAGE_FOLDER \
+                                    --vision_tower $VISION_TOWER \
+                                    --pretrain_mm_mlp_adapter $PRETRAIN_MM_MLP_ADAPTER \
+                                    --mm_projector_type $MM_PROJECTOR_TYPE \
+                                    --mm_vision_select_layer $MM_VISION_SELECT_LAYER \
+                                    --mm_use_im_start_end $MM_USE_IM_START_END \
+                                    --mm_use_im_patch_token $MM_USE_IM_PATCH_TOKEN \
+                                    --image_aspect_ratio pad \
+                                    --group_by_modality_length $GROUP_BY_MODALITY_LENGTH \
+                                    --bf16 $BF16 \
+                                    --output_dir $OUTPUT_DIR \
+                                    --num_train_epochs $NUM_TRAIN_EPOCHS \
+                                    --per_device_train_batch_size $PER_DEVICE_TRAIN_BATCH_SIZE \
+                                    --per_device_eval_batch_size $PER_DEVICE_EVAL_BATCH_SIZE \
+                                    --gradient_accumulation_steps $GRADIENT_ACCUMULATION_STEPS \
+                                    --evaluation_strategy $EVALUATION_STRATEGY \
+                                    --save_strategy $SAVE_STRATEGY \
+                                    --save_steps $SAVE_STEPS \
+                                    --save_total_limit $SAVE_TOTAL_LIMIT \
+                                    --learning_rate $LEARNING_RATE \
+                                    --weight_decay $WEIGHT_DECAY \
+                                    --warmup_ratio $WARMUP_RATIO \
+                                    --lr_scheduler_type $LR_SCHEDULER_TYPE \
+                                    --logging_steps $LOGGING_STEPS \
+                                    --tf32 $TF32 \
+                                    --model_max_length $MODEL_MAX_LENGTH \
+                                    --gradient_checkpointing $GRADIENT_CHECKPOINTING \
+                                    --dataloader_num_workers $DATALOADER_NUM_WORKERS \
+                                    --lazy_preprocess $LAZY_PREPROCESS \
+                                    --report_to $REPORT_TO $@; \
+                                else \
+                                    echo \"Invalid training type. Use 'pretrain' or 'finetune'.\"; \
+                                    exit 1; \
+                                fi"]
+
+# Default CMD without any arguments
+CMD []
