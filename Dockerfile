@@ -30,7 +30,7 @@ FROM base as setup
 
 # Copy LLaVA repo
 RUN mkdir /LLaVA
-COPY /home/asakhare/github/zData/LLaVA /LLaVA
+COPY . /LLaVA
 
 #ARG LLAVA_COMMIT=9a26bd1435b4ac42c282757f2c16d34226575e96
 #RUN git clone https://github.com/haotian-liu/LLaVA.git && \
@@ -56,11 +56,11 @@ ENV LORA_ENABLE=True
 ENV LORA_R=128
 ENV LORA_ALPHA=256
 ENV DEEPSPEED=./scripts/zero3.json
-ENV MODEL_NAME_OR_PATH=lmsys/vicuna-13b-v1.5
+ENV MODEL_NAME_OR_PATH=./data/lmsys/vicuna-13b-v1.5
 ENV VERSION=plain
 ENV DATA_PATH=./data/blip_laion_cc_sbu_558k.json
 ENV IMAGE_FOLDER=./data/images
-ENV VISION_TOWER=openai/clip-vit-large-patch14-336
+ENV VISION_TOWER=./data/openai/clip-vit-large-patch14-336
 ENV MM_PROJECTOR_TYPE=mlp2x_gelu
 ENV TUNE_MM_MLP_ADAPTER=True
 ENV MM_VISION_SELECT_LAYER=-2
