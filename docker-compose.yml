@@ -17,3 +17,9 @@ services:
       context: .
       dockerfile: ./docker/finetune/Dockerfile
     image: llava_finetune
+
+  base:
+    build:
+      context: .
+      dockerfile: ./docker/base/Dockerfile
+    image: llava_base
