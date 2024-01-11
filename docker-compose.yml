@@ -1,0 +1,19 @@
+version: '3'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/server/Dockerfile
+    image: llava_server
+
+  pretrain:
+    build:
+      context: .
+      dockerfile: ./docker/pretrain/Dockerfile
+    image: llava_pretrain
+
+  finetune:
+    build:
+      context: .
+      dockerfile: ./docker/finetune/Dockerfile
+    image: llava_finetune
