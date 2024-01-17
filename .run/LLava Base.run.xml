@@ -1,0 +1,24 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="LLava Base" type="docker-deploy" factoryName="docker-image" server-name="Docker">
+    <deployment type="docker-image">
+      <settings>
+        <option name="imageTag" value="llava_base:latest" />
+        <option name="containerName" value="llava_base" />
+        <option name="commandLineOptions" value=" --gpus all -d --privileged " />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/LLaVA/data" />
+              <option name="hostPath" value="/home/asakhare/mnt/llava/pretrain" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/LLaVA/output" />
+              <option name="hostPath" value="/home/asakhare/mnt/llava/output" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
