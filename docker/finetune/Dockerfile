@@ -42,7 +42,7 @@ ENV LORA_ENABLE=True \
     REPORT_TO=wandb
 
 # Default entry point to the training script with conditional logic
-ENTRYPOINT ["/bin/bash", "-c", "/miniconda/envs/llava/bin/deepspeed llava/train/train_mem.py \
+ENTRYPOINT ["/bin/bash", "-c", "/venv/llava/bin/deepspeed llava/train/train_mem.py \
                                     --lora_enable $LORA_ENABLE \
                                     --lora_r $LORA_R \
                                     --lora_alpha $LORA_ALPHA \
