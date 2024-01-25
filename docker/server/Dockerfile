@@ -1,7 +1,7 @@
 FROM docker.io/asakhare/llava_base as base
 
 # Set environment variable for the model path
-ENV MODEL_PATH=./data/liuhaotian/llava-v1.5-13b \
+ENV MODEL_PATH=./models/liuhaotian/llava-v1.5-13b \
     HOST=0.0.0.0 \
     PORT=7860
 
